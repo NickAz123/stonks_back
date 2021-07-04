@@ -4,19 +4,35 @@ const BodyParser = require('body-parser');
 const PORT = 8080;
 require('dotenv').config();
 const fs = require('fs')
-const axios = require('axios')
+const axios = require('axios');
+const WebSocket = require('ws');
+
+let socket = new WebSocket("wss://ws.finnhub.io?token=c3gviv2ad3i83du7k9fg");
+
+socket.addEventListener('open', function (event) {
+  socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'AAPL'}))
+  socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}))
+  socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'IC MARKETS:1'}))
+});
+
+// Listen for messages
+socket.addEventListener('message', function (event) {
+  console.log('Message from server ', event.data);
+});
 
 // Express Configuration
 App.use(BodyParser.urlencoded({ extended: false }));
 App.use(BodyParser.json());
 App.use(Express.static('public'));
 
-//Database connection configuration
-const { Pool } = require('pg');
-const dbParams = require('./lib/db.js')
-const db = new Pool(dbParams);
-console.log(dbParams)
-db.connect();
+
+
+// //Database connection configuration
+// const { Pool } = require('pg');
+// const dbParams = require('./lib/db.js')
+// const db = new Pool(dbParams);
+// console.log(dbParams)
+// db.connect();
 
 // Get Route for current logged in user
 App.get('/api/users', (req, res) => {
@@ -74,6 +90,8 @@ App.get('/api/all-news', (req, res) => {
     res.json({allnews})
   })
 })
+
+
 
 App.listen(PORT, () => {
   // eslint-disable-next-line no-console
