@@ -7,7 +7,7 @@ const fs = require('fs')
 const axios = require('axios');
 const WebSocket = require('ws');
 
-let socket = new WebSocket("wss://ws.finnhub.io?token=c3gviv2ad3i83du7k9fg");
+let socket = new WebSocket(`wss://ws.finnhub.io?token=${process.env.API_KEY}`);
 
 socket.addEventListener('open', function (event) {
   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'AAPL'}))
