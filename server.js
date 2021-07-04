@@ -4,12 +4,8 @@ const BodyParser = require('body-parser');
 const PORT = 8080;
 require('dotenv').config();
 const fs = require('fs')
-const axios = require('axios')
-
-// Express Configuration
-App.use(BodyParser.urlencoded({ extended: false }));
-App.use(BodyParser.json());
-App.use(Express.static('public'));
+const axios = require('axios');
+const WebSocket = require('ws');
 
 //Database connection configuration
 const { Pool } = require('pg');
@@ -17,6 +13,24 @@ const dbParams = require('./lib/db.js')
 const db = new Pool(dbParams);
 console.log(dbParams)
 db.connect();
+
+let socket = new WebSocket(`wss://ws.finnhub.io?token=${process.env.API_KEY}`);
+
+// socket.addEventListener('open', function (event) {
+//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'AAPL'}))
+//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}))
+//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'IC MARKETS:1'}))
+// });
+
+// // Listen for messages
+// socket.addEventListener('message', function (event) {
+//   console.log('Message from server ', event.data);
+// });
+
+// Express Configuration
+App.use(BodyParser.urlencoded({ extended: false }));
+App.use(BodyParser.json());
+App.use(Express.static('public'));
 
 // Get Route for current logged in user
 App.get('/api/users', (req, res) => {
@@ -75,6 +89,22 @@ App.get('/api/all-news', (req, res) => {
   })
 })
 
+//Get history for specific ticker
+App.get(`/api/all-history/:ticker`, (req, res) => {
+  axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${req.params.ticker}&apikey=${process.env.YAHOO_KEY}`).then((history) => {
+    resultsObj = {}
+    const allhistory = history.data['Weekly Adjusted Time Series']
+    for (const [key, value] of Object.entries(allhistory)){
+      if (key.slice(0,4) === '2018'){
+        break;
+      }
+      else {
+        resultsObj[key] = value
+      }
+    }
+    res.json(resultsObj)
+  })
+})
 
 App.listen(PORT, () => {
   // eslint-disable-next-line no-console
