@@ -84,7 +84,7 @@ App.get('/api/all-stocks', (req, res) => {
 //Get Route for Todays News
 App.get('/api/all-news', (req, res) => {
   axios.get(`https://finnhub.io/api/v1/news?category=general&token=${process.env.API_KEY}`).then((news)=> {
-    const allnews = news.data
+    const allnews = news.data.slice(0,10)
     res.json({allnews})
   })
 })
