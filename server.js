@@ -117,6 +117,17 @@ App.get(`/api/ticker-prices/:ticker`, (req, res) => {
   })
 })
 
+//Gets all crypto
+const urlc = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=${process.env.CRYPTO_API}`
+App.get(`/api/crypto-all`, (req, res) => {
+  axios.get(urlc).then((crypto)=> {
+    const allcrypto = crypto.data.data;
+    res.json({allcrypto})
+  }).catch((err)=> {
+    console.log(err)
+  })
+})
+
 App.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Express seems to be listening on port ${PORT} so that's pretty good 👍`);
