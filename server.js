@@ -17,8 +17,8 @@ db.connect();
 let socket = new WebSocket(`wss://ws.finnhub.io?token=${process.env.API_KEY}`);
 
 // socket.addEventListener('open', function (event) {
+//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'GOOG'}))
 //   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'AAPL'}))
-//   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}))
 //   socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'IC MARKETS:1'}))
 // });
 
@@ -103,6 +103,17 @@ App.get(`/api/all-history/:ticker`, (req, res) => {
       }
     }
     res.json(resultsObj)
+  })
+})
+
+//Get prices for selected ticker
+const url = `https://finnhub.io/api/v1/quote?symbol=AAPL&token=${process.env.API_KEY}`
+App.get(`/api/ticker-prices/:ticker`, (req, res) => {
+  axios.get(url).then((prices) => {
+    const allprices = prices.data
+    res.json({allprices})
+  }).catch((err) => {
+    console.log(err)
   })
 })
 
