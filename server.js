@@ -11,7 +11,7 @@ const WebSocket = require('ws');
 const { Pool } = require('pg');
 const dbParams = require('./lib/db.js')
 const db = new Pool(dbParams);
-console.log(dbParams)
+// console.log(dbParams)
 db.connect();
 
 let socket = new WebSocket(`wss://ws.finnhub.io?token=${process.env.API_KEY}`);
@@ -124,6 +124,16 @@ App.get(`/api/crypto-all`, (req, res) => {
     const allcrypto = crypto.data.data;
     res.json({allcrypto})
   }).catch((err)=> {
+    console.log(err)
+  })
+})
+
+//Gets users owned stocks
+App.get('/api/owned-stocks', (req, res) => {
+  db.query(`SELECT * FROM owned WHERE user_id=1`).then((data) => {
+    const owned = data.rows
+    res.json({owned});
+  }).catch((err) => {
     console.log(err)
   })
 })
