@@ -7,3 +7,7 @@ VALUES (1, 5000, 15, true, 'AAPL'),
 (1, 2500, 1000, true, 'DOGE'),
 (1, 7600, 20, false, 'BTC'),
 (1, 7600, 3250, true, 'DOGE');
+
+
+INSERT INTO owned (user_id, symbol, amount)
+VALUES(1, )
