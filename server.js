@@ -107,6 +107,29 @@ App.post(`/api/buy-stock`, (req, res) => {
   })
 })
 
+//Post route for selling a stock
+App.post(`/api/sell-stock`, (req, res) => {
+  const obj = req.body;
+  let finalAmount;
+  db.query(`INSERT INTO transactions (user_id, cost, shares, type, symbol)
+  VALUES(1, ${obj.cost}, ${obj.amount}, ${obj.type}, '${obj.symbol}');`).then(() => {
+    db.query(`SELECT * FROM owned WHERE user_id = 1 AND symbol = '${obj.symbol}';`).then((data) => {
+      finalAmount = data.rows[0].amount - obj.amount;
+      if (finalAmount >=0 ) {
+        finalAmount = obj.amount;
+        db.query(`UPDATE owned SET amount = ${parseFloat(data.rows[0].amount) - parseFloat(obj.amount)} WHERE symbol = '${obj.symbol}' AND user_id = 1;`);
+      } else {
+        finalAmount = parseFloat(data.rows[0].amount)
+        db.query(`DELETE FROM owned WHERE symbol = '${obj.symbol}' AND user_id = 1;`)
+      }
+    }).then(()=> {
+      db.query(`SELECT * FROM users WHERE id = 1`).then((data) => {
+        db.query(`UPDATE users SET balance = ${parseFloat(data.rows[0].balance) + (finalAmount * parseFloat(obj.cost))};`)
+      })
+    })
+  })
+})
+
 //FINNHUB API REQUESTS
 //Get Route for Todays News
 App.get('/api/all-news', (req, res) => {
