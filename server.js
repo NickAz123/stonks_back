@@ -91,17 +91,19 @@ App.get('/api/all-stocks', (req, res) => {
 //Post route for buying a stock
 App.post(`/api/buy-stock`, (req, res) => {
   const obj = req.body
-  db.query(`INSERT INTO transactions (user_id, cost, shares, type, symbol)
+  return db.query(`INSERT INTO transactions (user_id, cost, shares, type, symbol)
   VALUES(1, ${obj.cost}, ${obj.amount}, ${obj.type}, '${obj.symbol}');`).then(()=> {
-    db.query(`SELECT * FROM owned WHERE user_id = 1 AND symbol = '${obj.symbol}';`).then((data) => {
+    return db.query(`SELECT * FROM owned WHERE user_id = 1 AND symbol = '${obj.symbol}';`).then((data) => {
       if (data.rows.length === 0) {
-        db.query(`INSERT INTO owned (user_id, symbol, amount) VALUES(1, '${obj.symbol}', ${obj.amount});`)
+        return db.query(`INSERT INTO owned (user_id, symbol, amount) VALUES(1, '${obj.symbol}', ${obj.amount});`)
       } else {
-        db.query(`UPDATE owned SET amount = ${parseFloat(obj.amount) + parseFloat(data.rows[0].amount)} WHERE symbol = '${obj.symbol}' AND user_id = 1`)
+        return db.query(`UPDATE owned SET amount = ${parseFloat(obj.amount) + parseFloat(data.rows[0].amount)} WHERE symbol = '${obj.symbol}' AND user_id = 1`)
       }
     }).then(()=>{
-      db.query(`SELECT * FROM users WHERE id = 1;`).then((data)=>{
-        db.query(`UPDATE users SET balance = ${parseFloat(data.rows[0].balance) - (parseFloat(obj.amount) * parseFloat(obj.cost))} WHERE id = 1;`)
+      return db.query(`SELECT * FROM users WHERE id = 1;`).then((data)=>{
+        return db.query(`UPDATE users SET balance = ${parseFloat(data.rows[0].balance) - (parseFloat(obj.amount) * parseFloat(obj.cost))} WHERE id = 1;`)
+      }).then(()=> {
+        res.json({completed:true})
       })
     })
   })
@@ -111,20 +113,22 @@ App.post(`/api/buy-stock`, (req, res) => {
 App.post(`/api/sell-stock`, (req, res) => {
   const obj = req.body;
   let finalAmount;
-  db.query(`INSERT INTO transactions (user_id, cost, shares, type, symbol)
+  return db.query(`INSERT INTO transactions (user_id, cost, shares, type, symbol)
   VALUES(1, ${obj.cost}, ${obj.amount}, ${obj.type}, '${obj.symbol}');`).then(() => {
-    db.query(`SELECT * FROM owned WHERE user_id = 1 AND symbol = '${obj.symbol}';`).then((data) => {
+    return db.query(`SELECT * FROM owned WHERE user_id = 1 AND symbol = '${obj.symbol}';`).then((data) => {
       finalAmount = data.rows[0].amount - obj.amount;
-      if (finalAmount >=0 ) {
+      if (finalAmount >0 ) {
         finalAmount = obj.amount;
-        db.query(`UPDATE owned SET amount = ${parseFloat(data.rows[0].amount) - parseFloat(obj.amount)} WHERE symbol = '${obj.symbol}' AND user_id = 1;`);
+        return db.query(`UPDATE owned SET amount = ${parseFloat(data.rows[0].amount) - parseFloat(obj.amount)} WHERE symbol = '${obj.symbol}' AND user_id = 1;`);
       } else {
         finalAmount = parseFloat(data.rows[0].amount)
-        db.query(`DELETE FROM owned WHERE symbol = '${obj.symbol}' AND user_id = 1;`)
+        return db.query(`DELETE FROM owned WHERE symbol = '${obj.symbol}' AND user_id = 1;`)
       }
     }).then(()=> {
-      db.query(`SELECT * FROM users WHERE id = 1`).then((data) => {
-        db.query(`UPDATE users SET balance = ${parseFloat(data.rows[0].balance) + (finalAmount * parseFloat(obj.cost))};`)
+      return db.query(`SELECT * FROM users WHERE id = 1`).then((data) => {
+        return db.query(`UPDATE users SET balance = ${parseFloat(data.rows[0].balance) + (finalAmount * parseFloat(obj.cost))};`).then(() => {
+          res.json({completed: true})
+        })
       })
     })
   })
@@ -170,7 +174,7 @@ App.get(`/api/company-data/:ticker`, (req, res) => {
     console.log(err)
   })
 })
-//Get history for specific ticker
+//Get 2 year history for specific ticker
 App.get(`/api/all-history/:ticker`, (req, res) => {
   axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${req.params.ticker}&apikey=${process.env.YAHOO_KEY}`).then((history) => {
     resultsObj = {}
@@ -184,6 +188,37 @@ App.get(`/api/all-history/:ticker`, (req, res) => {
       }
     }
     res.json(resultsObj)
+  }).catch((err)=> {
+    console.log(err)
+  })
+})
+//Get 30 day history for specific ticker
+App.get(`/api/30-history/:ticker`, (req, res) => {
+  axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${req.params.ticker}&outputsize=compact&apikey=${process.env.YAHOO_KEY}`).then((history) => {
+    resultsObj = {}
+    let index = 0;
+    const allhistory = history.data["Time Series (Daily)"]
+    for (const [key, value] of Object.entries(allhistory)){
+      if (index === 30){
+        break;
+      }
+      else {
+        resultsObj[key] = value
+        index++;
+      }
+    }
+    res.json(resultsObj)
+    index = 0;
+  }).catch((err)=>{
+    console.log(err)
+  })
+})
+//Get a full day resolution 5 min intervals for specific ticker
+App.get(`/api/oneday-history/:ticker`, (req, res) => {
+  axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${req.params.ticker}&interval=5min&outputsize=full&apikey=${process.env.YAHOO_KEY}`).then((history)=>{
+    res.json(history.data["Time Series (5min)"])
+  }).catch((err)=>{
+    console.log(err)
   })
 })
 
