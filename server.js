@@ -192,7 +192,7 @@ App.get(`/api/all-history/:ticker`, (req, res) => {
     console.log(err)
   })
 })
-//Get 30 day history for specific ticker
+// Get 30 day history for specific ticker
 App.get(`/api/30-history/:ticker`, (req, res) => {
   axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${req.params.ticker}&outputsize=compact&apikey=${process.env.YAHOO_KEY}`).then((history) => {
     resultsObj = {}
