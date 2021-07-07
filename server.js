@@ -85,6 +85,13 @@ App.get('/api/tutorials', (req, res) => {
 App.get('/api/all-stocks', (req, res) => {
   let allstocks = fs.readFileSync('nyse_full_tickers.json');
   let stocks = JSON.parse(allstocks);
+
+  //Seperates the unregistered stocks
+  stocks.forEach((stock, index) => {
+    if ((stock.symbol).includes("^")){
+      stocks.splice(index, 1)
+    }
+  })
   res.json({stocks});
 })
 
@@ -215,7 +222,7 @@ App.get(`/api/30-history/:ticker`, (req, res) => {
 })
 //Get a full day resolution 5 min intervals for specific ticker
 App.get(`/api/oneday-history/:ticker`, (req, res) => {
-  axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${req.params.ticker}&interval=5min&outputsize=full&apikey=${process.env.YAHOO_KEY}`).then((history)=>{
+  axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${req.params.ticker}&interval=5min&apikey=${process.env.YAHOO_KEY}`).then((history)=>{
     res.json(history.data["Time Series (5min)"])
   }).catch((err)=>{
     console.log(err)
