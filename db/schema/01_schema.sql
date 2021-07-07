@@ -8,7 +8,7 @@ CREATE TABLE users (
   username VARCHAR(255) NOT NULL, 
   email VARCHAR(255) NOT NULL,
   password_digest VARCHAR(255) NOT NULL,
-  balance INT DEFAULT 50000,
+  balance FLOAT DEFAULT 50000,
   average_income INT DEFAULT NULL
 );
 

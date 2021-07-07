@@ -88,6 +88,25 @@ App.get('/api/all-stocks', (req, res) => {
   res.json({stocks});
 })
 
+//Post route for buying a stock
+App.post(`/api/buy-stock`, (req, res) => {
+  const obj = req.body
+  db.query(`INSERT INTO transactions (user_id, cost, shares, type, symbol)
+  VALUES(1, ${obj.cost}, ${obj.amount}, ${obj.type}, '${obj.symbol}');`).then(()=> {
+    db.query(`SELECT * FROM owned WHERE user_id = 1 AND symbol = '${obj.symbol}';`).then((data) => {
+      if (data.rows.length === 0) {
+        db.query(`INSERT INTO owned (user_id, symbol, amount) VALUES(1, '${obj.symbol}', ${obj.amount});`)
+      } else {
+        db.query(`UPDATE owned SET amount = ${parseFloat(obj.amount) + parseFloat(data.rows[0].amount)} WHERE symbol = '${obj.symbol}' AND user_id = 1`)
+      }
+    }).then(()=>{
+      db.query(`SELECT * FROM users WHERE id = 1;`).then((data)=>{
+        db.query(`UPDATE users SET balance = ${parseFloat(data.rows[0].balance) - (parseFloat(obj.amount) * parseFloat(obj.cost))} WHERE id = 1;`)
+      })
+    })
+  })
+})
+
 //FINNHUB API REQUESTS
 //Get Route for Todays News
 App.get('/api/all-news', (req, res) => {
@@ -142,6 +161,16 @@ App.get(`/api/all-history/:ticker`, (req, res) => {
       }
     }
     res.json(resultsObj)
+  })
+})
+
+//POLYGON.IO API REQUESTS
+//News for specific ticker
+App.get('/api/single-news/:ticker', (req, res) => {
+  axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${req.params.ticker}&published_utc.gte=2021-04-26&apiKey=${process.env.POLY_API}`)
+  .then((news) => {
+    const results = news.data;
+    res.json(results);
   })
 })
 
