@@ -14,6 +14,20 @@
     "url": "/market-activity/stocks/a"
   },
   {
+    "symbol": "BTC",
+    "name": "Bitcoin",
+    "lastsale": "$33498.60",
+    "netchange": "418.00",
+    "pctchange": "1.25%",
+    "volume": "28780000000",
+    "marketCap": "626320000000.00",
+    "country": "United States",
+    "ipoyear": "1999",
+    "industry": "Crypto",
+    "sector": "Crypto",
+    "url": "/market-activity/stocks/a"
+  },
+  {
     "symbol": "AA",
     "name": "Alcoa Corporation Common Stock ",
     "lastsale": "$36.96",

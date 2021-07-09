@@ -90,7 +90,6 @@ App.get("/api/all-stocks", (req, res) => {
   });
   res.json({ stocks });
 });
-
 //Post route for buying a stock
 App.post(`/api/buy-stock`, (req, res) => {
   const obj = req.body;
@@ -134,7 +133,6 @@ App.post(`/api/buy-stock`, (req, res) => {
         });
     });
 });
-
 //Post route for selling a stock
 App.post(`/api/sell-stock`, (req, res) => {
   const obj = req.body;
@@ -181,6 +179,24 @@ App.post(`/api/sell-stock`, (req, res) => {
         });
     });
 });
+// Post request for updating completed tutorials
+App.post('/api/complete-tutorial/:column', (req, res) => {
+  db.query(`UPDATE tutorials SET ${req.params.column} = true WHERE user_id = 1;`).then(() => {
+    db.query(`SELECT * FROM tutorials WHERE user_id = 1;`).then((data)=> {
+      const tutorials = data.rows;
+      res.json({ tutorials });
+    })
+  }).catch((err) => {
+    console.log(err)
+  })
+})
+//Get request for btc history
+App.get('/api/get-btc', (req, res) => {
+  let history = fs.readFileSync("btc_1month.json");
+  let btc = JSON.parse(history);
+  let element = btc
+  res.json({element})
+})
 
 //FINNHUB API REQUESTS
 //Get Route for Todays News
