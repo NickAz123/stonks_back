@@ -345,8 +345,15 @@ App.get("/api/single-news/:ticker", (req, res) => {
       `https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${req.params.ticker}&published_utc.gte=2021-04-26&apiKey=${process.env.POLY_API}`
     )
     .then((news) => {
-      const results = news.data;
-      res.json(results);
+      if (news.data.length = 0)
+      {
+        let cryptonews = fs.readFileSync("btc_news.json");
+        let btcnews = JSON.parse(cryptonews);
+        res.json(btcnews)
+      } else {
+        const results = news.data;
+        res.json(results);
+      }
     });
 });
 
